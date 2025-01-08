@@ -1,12 +1,5 @@
 import streamlit as st
-from database import setup_database, get_secret_key, store_secret_key, create_connection
-from user import hash_password, register_user, login_user, delete_user_account, is_username_available, get_user_id, get_email_id, is_valid_email
-from secret import add_secret, view_secrets, delete_secret, analyze_secret
-from biometric import biometric_verification, capture_and_store_biometric_data
-from session import initialize_session, logout_user, check_session_timeout
-from data_visualization import visualize_secret_sentiments
-from SpeechRecognizer import recognize_speech_from_mic
-from otp import generate_otp, send_otp_via_email
+from modules import biometric, data_visualization, database, otp,secret, session, SpeechRecognizer, user
 import logging
 import re
 
