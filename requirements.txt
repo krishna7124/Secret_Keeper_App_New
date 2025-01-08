@@ -1,0 +1,16 @@
+mysql-connector-python
+opencv-python
+face_recognition
+SpeechRecognition
+cmake
+dlib==19.24.2
+numpy
+matplotlib
+seaborn
+plotly
+cryptography
+textblob
+pandas
+Pillow
+spacy>=3.0.0,<4.0.0
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl#sha256=1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85
