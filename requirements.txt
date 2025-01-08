@@ -1,6 +1,6 @@
+mysql-connector-python
 mysqlclient
 SQLAlchemy
-mysql-connector-python
 opencv-python
 face_recognition
 SpeechRecognition
