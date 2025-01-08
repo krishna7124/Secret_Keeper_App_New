@@ -1,6 +1,6 @@
-from mysql.connector import connection
+## from mysql.connector import connection
 import streamlit as st
-from mysql.connector import Error
+## from mysql.connector import Error
 from cryptography.fernet import Fernet
 import logging
 import base64
@@ -11,6 +11,8 @@ db_config = st.secrets["mysql"]
 def create_connection():
     """Create a database connection."""
     try:
+        conn = st.connection('mysql', type='sql')
+'''
         conn = connection.MySQLConnection(
             host=db_config["host"],
             database=db_config["database"],
@@ -18,6 +20,7 @@ def create_connection():
             password=db_config["password"],
             auth_plugin=db_config["auth_plugin"]
         )
+'''
         if conn.is_connected():
             logging.info("Connected to MySQL database.")
             return conn
