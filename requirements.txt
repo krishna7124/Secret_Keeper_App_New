@@ -1,4 +1,5 @@
 mysql-connector-python
+opencv-python
 opencv-python-headless
 face_recognition
 SpeechRecognition
