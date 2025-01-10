@@ -1,5 +1,5 @@
 import streamlit as st
-from Modules import biometric, data_visualization, database, otp,secret, session, SpeechRecognizer, user
+from modules import biometric, data_visualization, database, otp,secret, session, SpeechRecognizer, user
 import logging
 import re
 
