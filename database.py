@@ -26,6 +26,8 @@ def create_connection():
             return conn
     except Error as e:
         logging.error(f"Error: {e}")
+    finally:
+        conn.close()
     return None
 
 
