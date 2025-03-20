@@ -2,6 +2,10 @@ import streamlit as st
 from modules import biometric, data_visualization, database, otp,secret, session, SpeechRecognizer, user
 import logging
 import re
+import os
+
+port = int(os.environ.get("PORT", 8000))
+app.run(host="0.0.0.0", port=port, debug=True)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO,
