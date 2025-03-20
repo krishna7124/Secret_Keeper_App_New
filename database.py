@@ -24,10 +24,10 @@ def create_connection():
         if conn.is_connected():
             logging.info("Connected to MySQL database.")
             return conn
+            
     except Error as e:
         logging.error(f"Error: {e}")
-    finally:
-        conn.close()
+    
     return None
 
 
