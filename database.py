@@ -1,30 +1,28 @@
 ## from mysql.connector import connection
 import streamlit as st
-## from mysql.connector import Error
+from mysql.connector import Error  # Import Error properly
 from cryptography.fernet import Fernet
 import logging
 import base64
 
 db_config = st.secrets["mysql"]
 
-
 def create_connection():
     """Create a database connection."""
     try:
-        conn = st.connection('mysql', type='sql')
-'''
+        # Using MySQL Connector instead of Streamlit's connection
         conn = connection.MySQLConnection(
             host=db_config["host"],
             database=db_config["database"],
             user=db_config["user"],
             password=db_config["password"],
-            auth_plugin=db_config["auth_plugin"]
+            auth_plugin=db_config.get("auth_plugin", "mysql_native_password")  # Default plugin
         )
-'''
+
         if conn.is_connected():
             logging.info("Connected to MySQL database.")
             return conn
-            
+
     except Error as e:
         logging.error(f"Error: {e}")
     
@@ -71,6 +69,8 @@ def setup_database():
         FOREIGN KEY (user_id) REFERENCES users(id)
     )
     """)
+
+    # Create secret_tags table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS secret_tags (
         secret_id INT,
@@ -114,13 +114,13 @@ def generate_secret_key():
 def store_secret_key(user_id):
     """Stores a generated secret key in the database for a given user."""
     conn = create_connection()
-    # Generate the secret key and encode it to base64 before storing
-    secret_key = base64.b64encode(generate_secret_key()).decode('utf-8')
-
     if conn is None:
         logging.error(
             "Failed to create database connection. Secret key storage failed.")
         return
+
+    # Generate the secret key and encode it to base64 before storing
+    secret_key = base64.b64encode(generate_secret_key()).decode('utf-8')
 
     try:
         cursor = conn.cursor()
