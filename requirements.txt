@@ -1,6 +1,5 @@
 streamlit
-mysql-connector-python
-opencv-python
+mysql-connector-python
 opencv-python-headless
 face_recognition
 SpeechRecognition
