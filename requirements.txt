@@ -5,7 +5,7 @@ face-recognition
 SpeechRecognition
 cmake
 dlib==19.24.2
-numpy
+numpy==1.26.3
 matplotlib
 seaborn
 plotly
