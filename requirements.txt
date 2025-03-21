@@ -1,7 +1,7 @@
 streamlit
 mysql-connector-python
 opencv-python-headless
-face_recognition
+face-recognition
 SpeechRecognition
 cmake
 dlib==19.24.2
