@@ -1,38 +1,40 @@
-## from mysql.connector import connection
-import streamlit as st
-from mysql.connector import Error  # Import Error properly
+import os
+import mysql.connector
+from mysql.connector import Error
 from cryptography.fernet import Fernet
 import logging
 import base64
 
-db_config = st.secrets["mysql"]
+# Azure MySQL database configuration (from environment variables)
+db_config = {
+    "host": os.getenv("AZURE_MYSQL_HOST"),
+    "database": os.getenv("AZURE_MYSQL_NAME"),
+    "user": os.getenv("AZURE_MYSQL_USER"),
+    "password": os.getenv("AZURE_MYSQL_PASSWORD"),
+}
 
 def create_connection():
-    """Create a database connection."""
+    """Create a database connection to Azure MySQL (without SSL)."""
     try:
-        # Using MySQL Connector instead of Streamlit's connection
-        conn = connection.MySQLConnection(
-            host=db_config["host"],
-            database=db_config["database"],
+        conn = mysql.connector.connect(
             user=db_config["user"],
             password=db_config["password"],
-            auth_plugin=db_config.get("auth_plugin", "mysql_native_password")  # Default plugin
+            host=db_config["host"],
+            port=3306,
+            database=db_config["database"]
         )
-
         if conn.is_connected():
-            logging.info("Connected to MySQL database.")
+            logging.info("Connected to MySQL database (Azure).")
             return conn
-
     except Error as e:
-        logging.error(f"Error: {e}")
-    
+        logging.error(f"Database connection error: {e}")
     return None
-
 
 def setup_database():
     """Set up the database and create required tables if they do not exist."""
     conn = create_connection()
     if conn is None:
+        logging.error("Database connection failed. Exiting setup.")
         return
 
     cursor = conn.cursor()
@@ -57,7 +59,7 @@ def setup_database():
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT,
         secret TEXT NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
     """)
 
@@ -66,7 +68,7 @@ def setup_database():
     CREATE TABLE IF NOT EXISTS secret_keys (
         user_id INT PRIMARY KEY,
         secret_key BLOB NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
     """)
 
@@ -74,7 +76,8 @@ def setup_database():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS secret_tags (
         secret_id INT,
-        tags VARCHAR(255)
+        tags VARCHAR(255),
+        FOREIGN KEY (secret_id) REFERENCES secrets(id) ON DELETE CASCADE
     )
     """)
 
@@ -83,55 +86,45 @@ def setup_database():
     cursor.close()
     conn.close()
 
-
 def get_secret_key(user_id):
-    """Get the secret key for the user."""
+    """Retrieve the secret key for a user."""
     conn = create_connection()
     if conn is None:
         return None
 
     try:
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT secret_key FROM secret_keys WHERE user_id = %s", (user_id,))
+        cursor.execute("SELECT secret_key FROM secret_keys WHERE user_id = %s", (user_id,))
         result = cursor.fetchone()
         if result:
-            # Decode the base64 encoded key to return a byte string
-            return base64.b64decode(result[0])
+            return base64.b64decode(result[0])  # Decode base64 stored key
     except Error as e:
         logging.error(f"Error retrieving secret key: {e}")
     finally:
         conn.close()
-
+    
     return None
 
-
 def generate_secret_key():
-    """Generates a new secret key using Fernet."""
+    """Generate a new secret key using Fernet encryption."""
     return Fernet.generate_key()
 
-
 def store_secret_key(user_id):
-    """Stores a generated secret key in the database for a given user."""
+    """Store a generated secret key for a user in the database."""
     conn = create_connection()
     if conn is None:
-        logging.error(
-            "Failed to create database connection. Secret key storage failed.")
+        logging.error("Database connection failed. Secret key storage aborted.")
         return
 
-    # Generate the secret key and encode it to base64 before storing
-    secret_key = base64.b64encode(generate_secret_key()).decode('utf-8')
+    secret_key = base64.b64encode(generate_secret_key()).decode('utf-8')  # Encode before storing
 
     try:
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO secret_keys (user_id, secret_key) VALUES (%s, %s)",
-            (user_id, secret_key)
-        )
+        cursor.execute("INSERT INTO secret_keys (user_id, secret_key) VALUES (%s, %s)", (user_id, secret_key))
         conn.commit()
         logging.info("Secret key stored successfully.")
     except Error as e:
-        logging.error(f"Error '{e}' occurred while storing secret key.")
+        logging.error(f"Error storing secret key: {e}")
     finally:
         cursor.close()
         conn.close()
